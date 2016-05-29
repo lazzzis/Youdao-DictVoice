@@ -1,6 +1,6 @@
 # DictVoice
 
-从 [youdao.com]() 获取单词的音频，可以用于简单的听写
+从 [youdao.com](http://youdao.com) 获取单词的音频，可以用于简单的听写
 
 # 安装
 
@@ -24,7 +24,7 @@ mac :
 brew install ffmpeg
 ```
 
-其他: [https://ffmpeg.org/download.html]()
+其他: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 
 # 使用方法
 
