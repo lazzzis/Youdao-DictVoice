@@ -7,10 +7,18 @@ import time
 words_file = 'words.md'
 interval_time = 1 # the internal time between two words
 
+def check_cache(f):
+    def _wrapper(words):
+        if type(words) not in (type([]), type(())):
+            words = [words]
+        for word in words:
+            if not os.path.isfile(word + '.wav'):
+                f([word])
+    return _wrapper
+
+
+@check_cache
 def download_audio(words):
-    name_lst = []
-    if type(words) not in (type([]), type(())):
-        words = [words]
     for word in words:
         r = requests.get(url='http://dict.youdao.com/dictvoice?audio=' + word + '&type=2', stream=True)
         with open(word + '.mp3', 'wb+') as f:
@@ -18,8 +26,6 @@ def download_audio(words):
         song = AudioSegment.from_mp3(word + ".mp3")
         song.export(word + ".wav", format="wav")
         os.remove(word + '.mp3')
-        name_lst.append(word + '.wav')
-    return name_lst
 
 
 def play_audio(audio, wait=True, sleep=0):
@@ -33,6 +39,7 @@ def play_audio(audio, wait=True, sleep=0):
 with open(words_file) as f:
     lst = f.readlines()
     lst = [item.strip() for item in lst]
-lst = download_audio(lst)
-for item in lst:
+    lst = [item for item in lst if item != '']
+download_audio(lst)
+for item in (item + '.wav' for item in lst):
     play_audio(item, sleep=interval_time)

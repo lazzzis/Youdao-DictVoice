@@ -24,7 +24,7 @@ mac :
 brew install ffmpeg
 ```
 
-其他: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+其他系统: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 
 # 使用方法
 
@@ -45,7 +45,7 @@ python3 dictVoice.py
 
 # 删除下载的文件
 
-因为是将音频文件获取到本地后再播放，因此在执行文件后会在本地留下音频文件。可以用一条命令全部删除：
+因为是将音频文件获取到本地后再播放，因此在执行文件后会在本地留下音频文件。这些文件属于 **缓存文件** ，每次下载音频前，程序都会检查一遍所需单词的音频文件是否已经在当前文件夹了，如果已经在了，则不会重复下载，否则会下载音频文件。如果要删除，可以用一条命令全部删除：
 
 ```
 rm *.wav
