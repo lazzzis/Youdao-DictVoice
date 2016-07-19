@@ -1,6 +1,6 @@
 # DictVoice
 
-从 [youdao.com](http://youdao.com) 获取单词的音频，可以用于简单的听写
+从 [youdao.com](http://youdao.com) 获取单词或词组的音频，可以用于简单的听写
 
 # 安装
 
