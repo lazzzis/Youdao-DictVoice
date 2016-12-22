@@ -3,29 +3,39 @@ import os
 import requests
 import simpleaudio as sa
 import time
+from collections import Iterable
 
 words_file = 'words.md'
-interval_time = 1 # the internal time between two words
+interval_time = 1  # the internal time between two words
+
 
 def check_cache(f):
     def _wrapper(words):
-        if type(words) not in (type([]), type(())):
-            words = [words]
+        if not isinstance(words, Iterable):
+            words = (words)
         for word in words:
             if not os.path.isfile(word + '.wav'):
                 f([word])
+
     return _wrapper
+
+
+def format_transfer(name, ori_format, target_format, remove_ori=False):
+    song = getattr(AudioSegment, "from_" + ori_format)(name + "." + ori_format)
+    song.export(name + "." + target_format, format=target_format)
+    if remove_ori:
+        os.remove(name + "." + ori_format)
 
 
 @check_cache
 def download_audio(words):
     for word in words:
-        r = requests.get(url='http://dict.youdao.com/dictvoice?audio=' + word + '&type=2', stream=True)
+        r = requests.get(
+            url='http://dict.youdao.com/dictvoice?audio=' + word + '&type=2',
+            stream=True)
         with open(word + '.mp3', 'wb+') as f:
             f.write(r.content)
-        song = AudioSegment.from_mp3(word + ".mp3")
-        song.export(word + ".wav", format="wav")
-        os.remove(word + '.mp3')
+        format_transfer(word, 'mp3', 'wav', remove_ori=True)
 
 
 def play_audio(audio, wait=True, sleep=0):
@@ -38,7 +48,7 @@ def play_audio(audio, wait=True, sleep=0):
 
 with open(words_file) as f:
     lst = f.readlines()
-    lst = [item.strip() for item in lst]
+    lst = (item.strip() for item in lst)
     lst = [item for item in lst if item != '']
 download_audio(lst)
 for item in (item + '.wav' for item in lst):
