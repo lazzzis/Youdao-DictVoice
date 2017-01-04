@@ -21,21 +21,25 @@ def check_cache(f):
 
 
 def format_transfer(name, ori_format, target_format, remove_ori=False):
-    song = getattr(AudioSegment, "from_" + ori_format)(name + "." + ori_format)
-    song.export(name + "." + target_format, format=target_format)
-    if remove_ori:
-        os.remove(name + "." + ori_format)
+    """ori_format, target_format: only 'mp3' and 'wav' and supported"""
+    try:
+        song = getattr(AudioSegment, "from_" + ori_format)(name + "." + ori_format)
+        song.export(name + "." + target_format, format=target_format)
+        if remove_ori:
+            os.remove(name + "." + ori_format)
+    except AttributeError():
+        raise ValueError("Only 'mp3' and 'wav' format are supported")
 
 
 @check_cache
-def download_audio(words):
+def download_audio(words, target_format='wav'):
     for word in words:
         r = requests.get(
             url='http://dict.youdao.com/dictvoice?audio=' + word + '&type=2',
             stream=True)
         with open(word + '.mp3', 'wb+') as f:
             f.write(r.content)
-        format_transfer(word, 'mp3', 'wav', remove_ori=True)
+        format_transfer(word, 'mp3', 'target_format', remove_ori=True)
 
 
 def play_audio(audio, wait=True, sleep=0):
