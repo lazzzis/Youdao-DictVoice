@@ -1,6 +1,0 @@
-world
-this
-test
-a
-hello
-is

@@ -16,7 +16,6 @@ def check_cache(f):
         for word in words:
             if not os.path.isfile(word + '.wav'):
                 f([word])
-
     return _wrapper
 
 
@@ -27,7 +26,7 @@ def format_transfer(name, ori_format, target_format, remove_ori=False):
         song.export(name + "." + target_format, format=target_format)
         if remove_ori:
             os.remove(name + "." + ori_format)
-    except AttributeError():
+    except AttributeError:
         raise ValueError("Only 'mp3' and 'wav' format are supported")
 
 
@@ -39,7 +38,7 @@ def download_audio(words, target_format='wav'):
             stream=True)
         with open(word + '.mp3', 'wb+') as f:
             f.write(r.content)
-        format_transfer(word, 'mp3', 'target_format', remove_ori=True)
+        format_transfer(word, 'mp3', target_format, remove_ori=True)
 
 
 def play_audio(audio, wait=True, sleep=0):
