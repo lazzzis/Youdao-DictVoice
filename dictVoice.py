@@ -1,5 +1,4 @@
 import argparse
-import os
 import random
 import time
 from collections import Iterable
@@ -7,6 +6,9 @@ from collections import Iterable
 import requests
 import simpleaudio as sa
 from pydub import AudioSegment
+from contextlib import contextmanager
+from os import chdir, getcwd, listdir, remove, makedirs
+from os.path import isfile, exists, join
 
 
 def check_cache(f):
@@ -14,7 +16,7 @@ def check_cache(f):
         if not isinstance(words, Iterable):
             words = (words)
         for word in words:
-            if not os.path.isfile(word + '.wav'):
+            if not isfile(word + '.wav'):
                 f([word])
     return _wrapper
 
@@ -23,11 +25,11 @@ def format_transfer(name, ori_format, target_format, remove_ori=False):
     """ori_format, target_format: only 'mp3' and 'wav' and supported"""
     try:
         song = getattr(AudioSegment, "from_" + ori_format)(name + "." + ori_format)
-        song.export(name + "." + target_format, format=target_format)
-        if remove_ori:
-            os.remove(name + "." + ori_format)
     except AttributeError:
         raise ValueError("Only 'mp3' and 'wav' format are supported")
+    song.export(name + "." + target_format, format=target_format)
+    if remove_ori:
+        remove(name + "." + ori_format)
 
 
 @check_cache
@@ -39,7 +41,6 @@ def download_audio(words, target_format='wav'):
         with open(word + '.mp3', 'wb+') as f:
             f.write(r.content)
         format_transfer(word, 'mp3', target_format, remove_ori=True)
-
 
 def play_audio(audio, wait=True, sleep=0):
     wave_obj = sa.WaveObject.from_wave_file(audio)
@@ -70,6 +71,13 @@ def make_parser():
         help="specify a file storing words with actual order (default ans.txt)",
         type=str,
         default="ans.txt")
+
+    parser.add_argument(
+        "-cd",
+        "--cache-directory",
+        help="specify the directory storing cache (default cache)",
+        type=str,
+        default="cache")
 
     parser.add_argument(
         "-rd",
@@ -108,6 +116,27 @@ def make_parser():
 
     return parser
 
+@contextmanager
+def change_dir(target_path):
+    """A function assisting change working directory temporarily
+
+    >>> import os
+    >>> os.chdir(os.path.expanduser('~'))
+    >>> os.getcwd() == os.path.expanduser('~')  # You're in your home directory now
+    True
+    >>> with change_dir('/usr/local'): # change working directory to '/usr/local'
+    ...     print(os.getcwd())
+    ...     pass # Anything you want to do in this directory
+    ...
+    /usr/local
+    >>> os.getcwd() == os.path.expanduser('~') # You're back in your previous working directory
+    True
+
+    """
+    current_path = getcwd()
+    chdir(target_path)
+    yield
+    chdir(current_path)
 
 if __name__ == '__main__':
     parser = make_parser()
@@ -125,10 +154,14 @@ if __name__ == '__main__':
     elif args.sort or args.reverse_sort:
         lst = sorted(lst, reverse=args.reverse_sort)
 
-    download_audio(lst)
-    for item in [item + '.wav' for item in lst]:
-        play_audio(item)
-        time.sleep(args.interval_time)
+    if not exists(args.cache_directory):
+        makedirs(args.cache_directory)
+
+    with change_dir(args.cache_directory):
+        download_audio(lst)
+        for item in [item + '.wav' for item in lst]:
+            play_audio(item)
+            time.sleep(args.interval_time)
 
     if args.output:
         with open(args.output, 'w+') as f:

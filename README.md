@@ -30,13 +30,13 @@ brew install ffmpeg
 
 在当前目录建立一个文件，名为 words.txt. 文件中每个单词一行。
 
-执行文件
+执行文件, 执行完后会有一个 ans.txt 文件用以保存播放的音频（以播放音频的顺序）
 
 ```
 python3 dictVoice.py
 ```
 
-# 可選參數
+# 可选参数
 
 ```bash
 usage: dictVoice.py [-h] [-v INTERVAL_TIME] [-f FILE] [-o OUTPUT] [-rd] [-s]
