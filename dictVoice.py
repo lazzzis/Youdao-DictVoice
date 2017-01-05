@@ -116,18 +116,17 @@ if __name__ == '__main__':
     with open(args.file) as f:
         lst = f.readlines()
         lst = (item.strip() for item in lst)
-        lst = (item for item in lst if item != '')
+        lst = [item for item in lst if item != '']
 
     if args.random:
-        lst = list(lst)
         random.shuffle(lst)
     elif args.reverse_order:
-        lst = list(lst)[::-1]
+        lst = lst[::-1]
     elif args.sort or args.reverse_sort:
         lst = sorted(lst, reverse=args.reverse_sort)
 
     download_audio(lst)
-    for item in (item + '.wav' for item in lst):
+    for item in [item + '.wav' for item in lst]:
         play_audio(item)
         time.sleep(args.interval_time)
 
