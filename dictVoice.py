@@ -8,7 +8,7 @@ import simpleaudio as sa
 from pydub import AudioSegment
 from contextlib import contextmanager
 from os import chdir, getcwd, listdir, remove, makedirs
-from os.path import isfile, exists, join
+from os.path import isfile, exists, join, expanduser
 
 
 def check_cache(f):
@@ -154,6 +154,7 @@ if __name__ == '__main__':
     elif args.sort or args.reverse_sort:
         lst = sorted(lst, reverse=args.reverse_sort)
 
+    args.cache_directory = expanduser(args.cache_directory)
     if not exists(args.cache_directory):
         makedirs(args.cache_directory)
 
