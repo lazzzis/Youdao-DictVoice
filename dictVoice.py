@@ -170,7 +170,6 @@ def translate(s: str) -> str:
     response = requests.post(url, data=data, headers=headers)
     html = response.content
     json_data = json.loads(html.decode('utf-8'))
-    # print(json_data['translateResult'][0][0]['tgt'])
     return json_data['translateResult'][0][0]['tgt']
 
 
