@@ -1,7 +1,8 @@
+# -*- coding: UTF-8 -*-
 import argparse
 import random
 import time
-from collections import Iterable
+from collections.abc import Iterable
 
 import requests
 import simpleaudio as sa
@@ -9,6 +10,9 @@ from pydub import AudioSegment
 from contextlib import contextmanager
 from os import chdir, getcwd, listdir, remove, makedirs
 from os.path import isfile, exists, join, expanduser
+
+import chardet
+import json
 
 
 def check_cache(f):
@@ -18,6 +22,7 @@ def check_cache(f):
         for word in words:
             if not isfile(word + '.wav'):
                 f([word])
+
     return _wrapper
 
 
@@ -36,11 +41,12 @@ def format_transfer(name, ori_format, target_format, remove_ori=False):
 def download_audio(words, target_format='wav'):
     for word in words:
         r = requests.get(
-            url='http://dict.youdao.com/dictvoice?audio=' + word + '&type=2',
+            url='http://dict.youdao.com/dictvoice?audio=' + word + '&type=1',
             stream=True)
         with open(word + '.mp3', 'wb+') as f:
             f.write(r.content)
         format_transfer(word, 'mp3', target_format, remove_ori=True)
+
 
 def play_audio(audio, wait=True, sleep=0):
     wave_obj = sa.WaveObject.from_wave_file(audio)
@@ -116,6 +122,7 @@ def make_parser():
 
     return parser
 
+
 @contextmanager
 def change_dir(target_path):
     """A function assisting change working directory temporarily
@@ -137,6 +144,35 @@ def change_dir(target_path):
     chdir(target_path)
     yield
     chdir(current_path)
+
+
+def translate(s: str) -> str:
+    url = 'http://fanyi.youdao.com/translate?i=%s&smartresult=dict&smartresult=rule' % s
+
+    data = {
+        'from': 'AUTO',
+        'to': 'AUTO',
+        'doctype': 'json',
+        'smartresult': 'dict',
+        'client': 'fanyideskweb',
+        'version': '2.1',
+        'keyfrom': 'fanyi.web',
+        'action': 'FY_BY_REALTIME',
+        'TypoResult': 'false'
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                      ' AppleWebKit/537.36 (KHTML, like Gecko)'
+                      ' Chrome/73.0.3683.86 Safari/537.36'
+    }
+
+    response = requests.post(url, data=data, headers=headers)
+    html = response.content
+    json_data = json.loads(html.decode('utf-8'))
+    # print(json_data['translateResult'][0][0]['tgt'])
+    return json_data['translateResult'][0][0]['tgt']
+
 
 if __name__ == '__main__':
     parser = make_parser()
@@ -164,6 +200,9 @@ if __name__ == '__main__':
             play_audio(item)
             time.sleep(args.interval_time)
 
+    for key, word in enumerate(lst):
+        lst[key] = word + ' ' + translate(word)
+
     if args.output:
-        with open(args.output, 'w+') as f:
+        with open(args.output, 'w', encoding='utf-8') as f:
             f.write("\n".join(lst))
